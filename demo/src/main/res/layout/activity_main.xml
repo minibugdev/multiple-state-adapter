@@ -3,53 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <Button
+        android:id="@+id/recylcerview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="Recylcer View"/>
 
-        <Button
-            android:id="@+id/loading_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Loading"/>
-
-        <Button
-            android:id="@+id/error_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Error"/>
-    </LinearLayout>
-
-    <LinearLayout
+    <Button
+        android:id="@+id/listview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/add_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Add"/>
-
-        <Button
-            android:id="@+id/clear_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Clear"/>
-    </LinearLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical"/>
+        android:text="List View"/>
 </LinearLayout>

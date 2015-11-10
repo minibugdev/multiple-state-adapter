@@ -5,11 +5,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
-import com.trydroid.multiplestateadapter.MultipleStateAdapter;
+import com.trydroid.multiplestateadapter.MultipleStateRecyclerViewAdapter;
 
-public class MyAdapter extends MultipleStateAdapter<String, MyAdapter.ViewHolder> {
+public class RecyclerViewAdapter extends MultipleStateRecyclerViewAdapter<String, RecyclerViewAdapter.ViewHolder> {
 
-    public MyAdapter(Context context) {
+    public RecyclerViewAdapter(Context context) {
         super(context);
     }
 
