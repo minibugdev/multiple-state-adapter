@@ -1,47 +1,49 @@
 package com.trydroid.multiplestateadapter;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MultipleStateAdapter<D, VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private final static int STATE_LOADING = 0;
-    private final static int STATE_DONE    = 1;
-    private final static int STATE_ERROR   = 2;
-    private final static int STATE_EMPTY   = 3;
+public abstract class MultipleStateAdapter<D> extends BaseAdapter implements AdapterAction<D>, ViewAction {
 
-    protected List<D> mItems;
+    private List<D> mItems;
+    private int     mState;
+    private Context mContext;
 
-    private int  mState;
     private View mEmptyView;
     private View mLoadingView;
     private View mErrorView;
 
     public MultipleStateAdapter(Context context) {
+        this.mContext = context;
         this.mItems = new ArrayList<>();
     }
 
-    public int getCount() {
-        return mItems.size();
+    public Context getContext() {
+        return mContext;
     }
 
     @Override
-    public int getItemCount() {
+    public int getCount() {
         switch (mState) {
-            case STATE_DONE:
-                return getCount();
+            case State.DONE:
+                return getItemSize();
 
-            case STATE_ERROR:
-            case STATE_EMPTY:
-            case STATE_LOADING:
+            case State.ERROR:
+            case State.EMPTY:
+            case State.LOADING:
             default:
                 return 1;
         }
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 4;
     }
 
     @Override
@@ -50,71 +52,80 @@ public abstract class MultipleStateAdapter<D, VH extends RecyclerView.ViewHolder
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        switch (viewType) {
-            case STATE_DONE:
-                View inflatedView = inflateLayout(getViewResourceId(), parent);
-                return onCreateViewHolder(inflatedView);
-
-            case STATE_ERROR:
-                return new StateViewHolder(getErrorView(parent));
-
-            case STATE_EMPTY:
-                return new StateViewHolder(getEmptyView(parent));
-
-            case STATE_LOADING:
-            default:
-                return new StateViewHolder(getLoadingView(parent));
-        }
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (STATE_DONE == getState()) {
-            onBindViewHolder((VH) holder, getItem(position), position);
+    public View getView(int position, View convertView, ViewGroup parent) {
+        switch (getItemViewType(position)) {
+            case State.DONE:
+                return getItemView(position, convertView, parent);
+
+            case State.ERROR:
+                return getErrorView(parent);
+
+            case State.EMPTY:
+                return getEmptyView(parent);
+
+            case State.LOADING:
+            default:
+                return getLoadingView(parent);
         }
     }
 
     /***
+     * Abstract
+     */
+    protected abstract View getItemView(int position, View convertView, ViewGroup parent);
+
+    /***
      * Action
      */
+    @Override
     public void addAll(List<D> items) {
         mItems.clear();
         appendAll(items);
     }
 
+    @Override
     public void appendAll(List<D> items) {
         mItems.addAll(items);
-        notifyState();
+        invalidateState();
     }
 
+    @Override
     public void add(D item) {
         mItems.add(item);
-        notifyStateInserted(getIndex(item));
+        invalidateState();
     }
 
+    @Override
     public void add(D item, int position) {
         mItems.add(item);
-        notifyStateInserted(position);
+        invalidateState();
     }
 
+    @Override
     public boolean update(D data, int position) {
         Object oldData = mItems.set(position, data);
         if (oldData != null) {
-            notifyStateUpdated(position);
+            invalidateState();
         }
         return oldData != null;
     }
 
+    @Override
     public boolean remove(int position) {
-        boolean validIndex = isValidIndex(position);
+        boolean validIndex = Utils.isValidIndex(position, getItemSize());
         if (validIndex) {
             mItems.remove(position);
-            notifyStateRemoved(position);
+            invalidateState();
         }
         return validIndex;
     }
 
+    @Override
     public boolean remove(D data) {
         if (mItems.contains(data)) {
             return remove(getIndex(data));
@@ -122,83 +133,105 @@ public abstract class MultipleStateAdapter<D, VH extends RecyclerView.ViewHolder
         return false;
     }
 
+    @Override
     public void clear() {
         mItems.clear();
-        notifyState();
+        invalidateState();
     }
 
+    @Override
     public void load() {
-        setState(STATE_LOADING);
+        setState(State.LOADING);
         mItems.clear();
         notifyDataSetChanged();
     }
 
+    @Override
     public void error() {
-        setState(STATE_ERROR);
+        setState(State.ERROR);
         mItems.clear();
         notifyDataSetChanged();
     }
 
+    @Override
     public int getIndex(D item) {
         return mItems.indexOf(item);
     }
 
+    @Override
     public D getItem(int position) {
         return mItems.get(position);
     }
 
+    @Override
     public boolean isEmpty() {
-        return getCount() == 0;
+        return getItemSize() == 0;
     }
 
+    @Override
+    public int getItemSize() {
+        return mItems.size();
+    }
+
+    /***
+     * View
+     */
+    @Override
     public void setEmptyView(View emptyView) {
         this.mEmptyView = emptyView;
     }
 
+    @Override
     public void setLoadingView(View loadingView) {
         this.mLoadingView = loadingView;
     }
 
+    @Override
     public void setErrorView(View errorView) {
         this.mErrorView = errorView;
     }
 
-    protected abstract int getViewResourceId();
+    @Override
+    public View getEmptyView(ViewGroup parent) {
+        if (mEmptyView == null) {
+            return Utils.inflateLayout(R.layout.view_state_empty, parent);
+        }
+        else {
+            return mEmptyView;
+        }
+    }
 
-    protected abstract VH onCreateViewHolder(View inflatedView);
+    @Override
+    public View getErrorView(ViewGroup parent) {
+        if (mErrorView == null) {
+            return Utils.inflateLayout(R.layout.view_state_error, parent);
+        }
+        else {
+            return mErrorView;
+        }
+    }
 
-    protected abstract void onBindViewHolder(VH holder, D item, int position);
+    @Override
+    public View getLoadingView(ViewGroup parent) {
+        if (mLoadingView == null) {
+            return Utils.inflateLayout(R.layout.view_state_loading, parent);
+        }
+        else {
+            return mLoadingView;
+        }
+    }
 
     /***
      * Private
      */
-    private void notifyStateRemoved(int position) {
-        invalidateState();
-        notifyItemRemoved(position);
-    }
-
-    private void notifyStateUpdated(int position) {
-        invalidateState();
-        notifyItemChanged(position);
-    }
-
-    private void notifyStateInserted(int position) {
-        invalidateState();
-        notifyItemInserted(position);
-    }
-
-    private void notifyState() {
-        invalidateState();
-        notifyDataSetChanged();
-    }
-
     private void invalidateState() {
-        if (getCount() > 0) {
-            setState(STATE_DONE);
+        if (getItemSize() > 0) {
+            setState(State.DONE);
         }
         else {
-            setState(STATE_EMPTY);
+            setState(State.EMPTY);
         }
+        notifyDataSetChanged();
     }
 
     private void setState(int state) {
@@ -207,50 +240,5 @@ public abstract class MultipleStateAdapter<D, VH extends RecyclerView.ViewHolder
 
     private int getState() {
         return mState;
-    }
-
-    private boolean isValidIndex(int position) {
-        return position >= 0 && position < getCount();
-    }
-
-    private View getEmptyView(ViewGroup parent) {
-        if (mEmptyView == null) {
-            return inflateLayout(R.layout.view_state_empty, parent);
-        }
-        else {
-            return mEmptyView;
-        }
-    }
-
-    private View getErrorView(ViewGroup parent) {
-        if (mErrorView == null) {
-            return inflateLayout(R.layout.view_state_error, parent);
-        }
-        else {
-            return mErrorView;
-        }
-    }
-
-    private View getLoadingView(ViewGroup parent) {
-        if (mLoadingView == null) {
-            return inflateLayout(R.layout.view_state_loading, parent);
-        }
-        else {
-            return mLoadingView;
-        }
-    }
-
-
-    private View inflateLayout(int resId, ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext()).inflate(resId, parent, false);
-    }
-
-    /***
-     * Static
-     */
-    public static class StateViewHolder extends RecyclerView.ViewHolder {
-        public StateViewHolder(View parent) {
-            super(parent);
-        }
     }
 }
