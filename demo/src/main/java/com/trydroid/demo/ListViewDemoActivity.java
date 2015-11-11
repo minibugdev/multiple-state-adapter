@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.trydroid.demo.adapter.ListViewAdapter;
+
 public class ListViewDemoActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ListViewAdapter mAdapter;

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">StateAdapter</string>
+
+    <string name="empty">Your list was empty.</string>
 </resources>

@@ -1,11 +1,14 @@
-package com.trydroid.demo;
+package com.trydroid.demo.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.trydroid.demo.R;
 import com.trydroid.multiplestateadapter.MultipleStateRecyclerViewAdapter;
+import com.trydroid.multiplestateadapter.helper.Utils;
 
 public class RecyclerViewAdapter extends MultipleStateRecyclerViewAdapter<String, RecyclerViewAdapter.ViewHolder> {
 
@@ -26,6 +29,11 @@ public class RecyclerViewAdapter extends MultipleStateRecyclerViewAdapter<String
     @Override
     protected void onBindViewHolder(ViewHolder inflatedView, String item, int position) {
         inflatedView.mTextView.setText(item);
+    }
+
+    @Override
+    public View getEmptyView(ViewGroup parent) {
+        return Utils.inflateLayout(R.layout.custom_empty, parent);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
