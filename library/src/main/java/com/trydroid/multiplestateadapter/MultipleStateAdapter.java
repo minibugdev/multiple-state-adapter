@@ -1,22 +1,23 @@
 package com.trydroid.multiplestateadapter;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import com.trydroid.multiplestateadapter.action.AdapterAction;
+import com.trydroid.multiplestateadapter.action.ViewAction;
+import com.trydroid.multiplestateadapter.helper.Utils;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MultipleStateAdapter<D> extends BaseAdapter implements AdapterAction<D>, ViewAction {
+public abstract class MultipleStateAdapter<D, VH> extends BaseAdapter implements AdapterAction<D>, ViewAction {
 
+    private Context mContext;
     private List<D> mItems;
     private int     mState;
-    private Context mContext;
-
-    private View mEmptyView;
-    private View mLoadingView;
-    private View mErrorView;
 
     public MultipleStateAdapter(Context context) {
         this.mContext = context;
@@ -60,7 +61,7 @@ public abstract class MultipleStateAdapter<D> extends BaseAdapter implements Ada
     public View getView(int position, View convertView, ViewGroup parent) {
         switch (getItemViewType(position)) {
             case State.DONE:
-                return getItemView(position, convertView, parent);
+                return inflateLayout(position, convertView, parent);
 
             case State.ERROR:
                 return getErrorView(parent);
@@ -74,10 +75,31 @@ public abstract class MultipleStateAdapter<D> extends BaseAdapter implements Ada
         }
     }
 
+    private View inflateLayout(int position, View convertView, ViewGroup parent) {
+        VH viewHolder;
+        if (convertView == null) {
+            convertView = LayoutInflater.from(parent.getContext()).inflate(getViewResourceId(), parent, false);
+            viewHolder = onCreateViewHolder(convertView);
+
+            convertView.setTag(viewHolder);
+        }
+        else {
+            viewHolder = (VH) convertView.getTag();
+        }
+
+        onBindViewHolder(viewHolder, getItem(position), position);
+
+        return convertView;
+    }
+
     /***
      * Abstract
      */
-    protected abstract View getItemView(int position, View convertView, ViewGroup parent);
+    protected abstract int getViewResourceId();
+
+    protected abstract VH onCreateViewHolder(View convertView);
+
+    protected abstract void onBindViewHolder(VH holder, D item, int position);
 
     /***
      * Action
@@ -177,48 +199,18 @@ public abstract class MultipleStateAdapter<D> extends BaseAdapter implements Ada
      * View
      */
     @Override
-    public void setEmptyView(View emptyView) {
-        this.mEmptyView = emptyView;
-    }
-
-    @Override
-    public void setLoadingView(View loadingView) {
-        this.mLoadingView = loadingView;
-    }
-
-    @Override
-    public void setErrorView(View errorView) {
-        this.mErrorView = errorView;
-    }
-
-    @Override
     public View getEmptyView(ViewGroup parent) {
-        if (mEmptyView == null) {
-            return Utils.inflateLayout(R.layout.view_state_empty, parent);
-        }
-        else {
-            return mEmptyView;
-        }
+        return Utils.inflateLayout(R.layout.view_state_empty, parent);
     }
 
     @Override
     public View getErrorView(ViewGroup parent) {
-        if (mErrorView == null) {
-            return Utils.inflateLayout(R.layout.view_state_error, parent);
-        }
-        else {
-            return mErrorView;
-        }
+        return Utils.inflateLayout(R.layout.view_state_error, parent);
     }
 
     @Override
     public View getLoadingView(ViewGroup parent) {
-        if (mLoadingView == null) {
-            return Utils.inflateLayout(R.layout.view_state_loading, parent);
-        }
-        else {
-            return mLoadingView;
-        }
+        return Utils.inflateLayout(R.layout.view_state_loading, parent);
     }
 
     /***

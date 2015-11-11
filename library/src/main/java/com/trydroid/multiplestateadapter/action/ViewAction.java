@@ -1,15 +1,9 @@
-package com.trydroid.multiplestateadapter;
+package com.trydroid.multiplestateadapter.action;
 
 import android.view.View;
 import android.view.ViewGroup;
 
 public interface ViewAction {
-
-    public void setEmptyView(View emptyView);
-
-    public void setLoadingView(View loadingView);
-
-    public void setErrorView(View errorView);
 
     public View getEmptyView(ViewGroup parent);
 

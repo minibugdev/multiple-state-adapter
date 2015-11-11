@@ -1,4 +1,4 @@
-package com.trydroid.multiplestateadapter;
+package com.trydroid.multiplestateadapter.action;
 
 import android.content.Context;
 

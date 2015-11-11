@@ -1,4 +1,4 @@
-package com.trydroid.multiplestateadapter;
+package com.trydroid.multiplestateadapter.helper;
 
 import android.view.LayoutInflater;
 import android.view.View;

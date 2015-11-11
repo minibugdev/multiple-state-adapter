@@ -5,6 +5,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.trydroid.multiplestateadapter.action.AdapterAction;
+import com.trydroid.multiplestateadapter.action.ViewAction;
+import com.trydroid.multiplestateadapter.helper.Utils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +16,9 @@ public abstract class MultipleStateRecyclerViewAdapter<D, VH extends RecyclerVie
     extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     implements AdapterAction<D>, ViewAction {
 
+    private Context mContext;
     private List<D> mItems;
     private int     mState;
-    private Context mContext;
-
-    private View mEmptyView;
-    private View mLoadingView;
-    private View mErrorView;
 
     public MultipleStateRecyclerViewAdapter(Context context) {
         this.mContext = context;
@@ -182,48 +182,18 @@ public abstract class MultipleStateRecyclerViewAdapter<D, VH extends RecyclerVie
      * View
      */
     @Override
-    public void setEmptyView(View emptyView) {
-        this.mEmptyView = emptyView;
-    }
-
-    @Override
-    public void setLoadingView(View loadingView) {
-        this.mLoadingView = loadingView;
-    }
-
-    @Override
-    public void setErrorView(View errorView) {
-        this.mErrorView = errorView;
-    }
-
-    @Override
     public View getEmptyView(ViewGroup parent) {
-        if (mEmptyView == null) {
-            return Utils.inflateLayout(R.layout.view_state_empty, parent);
-        }
-        else {
-            return mEmptyView;
-        }
+        return Utils.inflateLayout(R.layout.view_state_empty, parent);
     }
 
     @Override
     public View getErrorView(ViewGroup parent) {
-        if (mErrorView == null) {
-            return Utils.inflateLayout(R.layout.view_state_error, parent);
-        }
-        else {
-            return mErrorView;
-        }
+        return Utils.inflateLayout(R.layout.view_state_error, parent);
     }
 
     @Override
     public View getLoadingView(ViewGroup parent) {
-        if (mLoadingView == null) {
-            return Utils.inflateLayout(R.layout.view_state_loading, parent);
-        }
-        else {
-            return mLoadingView;
-        }
+        return Utils.inflateLayout(R.layout.view_state_loading, parent);
     }
 
     /***
@@ -264,5 +234,11 @@ public abstract class MultipleStateRecyclerViewAdapter<D, VH extends RecyclerVie
 
     private int getState() {
         return mState;
+    }
+
+    private static class StateViewHolder extends RecyclerView.ViewHolder {
+        public StateViewHolder(View parent) {
+            super(parent);
+        }
     }
 }
